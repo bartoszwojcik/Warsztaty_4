@@ -1,0 +1,46 @@
+.main-container {
+    display: block;
+    width: 80%;
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.book-list {
+    list-style-type: none;
+}
+
+.book-title {
+    border: 1px solid #000;
+    width: 90%;
+    margin: 5px;
+    padding: 10px;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+.book-title .remove-button {
+    float: right;
+    overflow: hidden;
+}
+
+.book-title button {
+    background: #0086FF;
+    border: none;
+    border-radius: 4px;
+    padding: 0 10px;
+    color: #fff;
+    font-size: 14px;
+    line-height: 28px;
+    transition: .2s all linear;
+    outline: none;
+    cursor: pointer;
+ }
+
+.book-desc {
+
+}
+
+.hidden-desc {
+    visibility: hidden;
+    display: none;
+}

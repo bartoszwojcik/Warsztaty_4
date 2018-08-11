@@ -2,9 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>BookSpace</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div class="wrapper">
+        <div class="main-container">
+            <h1>BookSpace</h1>
+            <p>&nbsp;</p>
+            <div>
+                <h4>Add new book</h4>
+                <form class="book-add-form" method="POST">
+                    <label>Book title:
+                        <input type="text" name="title" class="input-title" maxlength="200">
+                    </label>
+                    <label>Author:
+                        <input type="text" name="author" class="input-author" maxlength="200">
+                    </label>
+                    <label>ISBN:
+                        <input type="text" name="isbn" class="input-isbn" maxlength="17">
+                    </label>
+                    <label>Publisher:
+                        <input type="text" name="publisher" class="input-publisher" maxlength="200">
+                    </label>
+                    <label>Genre:
+                        <select name="genre" class="input-genre">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                        </select><br>
+                    </label>
 
+                    <button type="submit" class="add-book-button">Add</button>
+                </form>
+            </div>
+            <p>&nbsp;</p>
+            <h4>Found books:</h4>
+            <ul class="book-list">
+            </ul>
+        </div>
+    </div>
 </body>
+<script src="js/jquery-3.3.1.js"></script>
+<script src="js/book.js"></script>
 </html>
