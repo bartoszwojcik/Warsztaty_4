@@ -13,9 +13,16 @@
     border: 1px solid #000;
     width: 90%;
     margin: 5px;
-    padding: 10px;
     overflow: hidden;
     border-radius: 5px;
+    background: white;
+}
+
+.book-title-span {
+    margin: 10px;
+    padding: 5px;
+    font-weight: bold;
+
 }
 
 .book-title .remove-button {
@@ -37,7 +44,7 @@
  }
 
 .book-desc {
-
+    padding: 10px;
 }
 
 .hidden-desc {

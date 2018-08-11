@@ -24,11 +24,26 @@ let bookModifyForm = `<form class="book-modify-form hidden-desc" method="POST">
                             <option value="7">7</option>
                         </select><br>
                     </label>
-
-                    <button type="submit" class="modify-book-button">Add</button>
+                    <button type="submit" class="modify-book-button">Submit Changes</button>
                 </form>`;
 
 $(function() {
+
+    let serverAddress = "http://localhost:8000/book/";
+
+    let ajaxCommunication = (requestMethod, httpDestination, optionalObject) => {
+        return $.ajax({
+            url: httpDestination,
+            data: optionalObject,
+            type: requestMethod,
+            dataType: "json"
+        }).done(function(result) {
+            console.log("AJAX OK");
+            return result;
+        }).fail(function (xhr, status, err) {
+        }).always(function (xhr, status) {
+        });
+    };
 
     // Book object (for new books)
     let Book = function(
@@ -49,15 +64,17 @@ $(function() {
          dataType: "json"
     }).done(function(result) {
         for (let i = 0; i < result.length; i++) {
-            let newBook = $('<li class="book-title" data-id="' +
-                result[i].id +
-                '">' +
-                result[i].title +
-                '<div class="remove-button">' +
-                '<button>Remove</button>' +
-                '</div>' +
-                '<div class="book-desc hidden-desc"></div>' +
-                '</li>');
+            let newBook = $('<li class="book-title" data-id="'
+                + result[i].id
+                + '">'
+                + "<div class=\"book-title-span\">"
+                + result[i].title
+                + '<div class="remove-button">'
+                + '<button>Remove</button>'
+                + "</div>"
+                + '</div>'
+                + '<div class="book-desc hidden-desc"></div>'
+                + '</li>');
             $(".book-list").eq(0).append(newBook);
         }
 
@@ -67,7 +84,7 @@ $(function() {
                 removalClickEvent.stopImmediatePropagation();
                 $.ajax({
                     url: "http://localhost:8000/book/"
-                        + $(element).parent().parent().data("id"),
+                        + $(element).parent().parent().parent().data("id"),
                     type: "DELETE",
                     dataType: "json"
                 }).done(function () {
@@ -81,18 +98,18 @@ $(function() {
 
 
         // Prepare divs with click events
-        $(".book-title").each(function(index, element) {
+        $(".book-title-span").each(function(index, element) {
             $(element).on("click", function () {
-                if ($(element).children().last().eq(0).hasClass("hidden-desc")) {
+                if ($(element).next().hasClass("hidden-desc")) {
 
-                    $(element).children().last().eq(0).toggleClass("hidden-desc");
+                    $(element).next().toggleClass("hidden-desc");
 
                     $.ajax({
-                        url: "http://localhost:8000/book/" + $(element).data("id"),
+                        url: "http://localhost:8000/book/" + $(element).parent().data("id"),
                         type: "GET",
                         dataType: "json"
                     }).done(function (bookData) {
-                        $(element).children().last().eq(0).html(
+                        $(element).next().html(
                             "<span><br>Author: "
                             + bookData.author + "<br>"
                             + "Title: " +  bookData.title + "<br>"
@@ -105,7 +122,7 @@ $(function() {
                         );
 
                         // Display modification form
-                            $(".book-title").find(".modify-button").each(function(index, element) {
+                        $(".book-title").find(".modify-button").each(function(index, element) {
                             $(element).on("click", function (event) {
                                 event.stopPropagation();
                                 if ($(element).next().hasClass("hidden-desc")) {
@@ -115,7 +132,7 @@ $(function() {
                         });
 
                         // PUT modify book
-                        $(".modify-book-button").each(function(modifyButton){
+                        $(element).next().find(".modify-book-button").each(function(index, modifyButton){
                             $(modifyButton).on("click", function(event) {
                                 // Perform validation
                                 if (!$(modifyButton).parent().find(".input-new-author").val()
@@ -129,16 +146,17 @@ $(function() {
 
                                     // New book object
                                     let modifiedBook = new Book(
-                                        $(modifyButton).parent().find(".input-author").val(),
-                                        $(modifyButton).parent().find(".input-title").val(),
-                                        $(modifyButton).parent().find(".input-isbn").val(),
-                                        $(modifyButton).parent().find(".input-publisher").val(),
-                                        $(modifyButton).parent().find(".input-genre").val()
+                                        $(modifyButton).parent().find(".input-new-author").val(),
+                                        $(modifyButton).parent().find(".input-new-title").val(),
+                                        $(modifyButton).parent().find(".input-new-isbn").val(),
+                                        $(modifyButton).parent().find(".input-new-publisher").val(),
+                                        $(modifyButton).parent().find(".input-new-genre").val()
                                     );
 
                                     // Submit object via AJAX
                                     $.ajax({
-                                        url: "http://localhost:8000/book/"+ $(element).parent().parent().data("id"),        //Check
+                                        url: "http://localhost:8000/book/"
+                                            + $(modifyButton).parent().parent().parent().data("id"),
                                         data: modifiedBook,
                                         type: "PUT",
                                         dataType: "json"
@@ -157,7 +175,7 @@ $(function() {
                     });
 
                 } else {
-                    $(element).children().last().eq(0).toggleClass("hidden-desc");
+                    $(element).next().toggleClass("hidden-desc");
                 }
             })
         });
