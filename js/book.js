@@ -1,203 +1,202 @@
+/*
+Warning:
+The current version does not resolve the CORS issue in e.g. Firefox.
+Connection should be proxied
+ */
+
+
 "use strict";
 
-let bookModifyForm = `<form class="book-modify-form hidden-desc" method="POST">
-                    <label>Book title:
-                        <input type="text" name="title" class="input-new-title" maxlength="200">
-                    </label>
-                    <label>Author:
-                        <input type="text" name="author" class="input-new-author" maxlength="200">
-                    </label>
-                    <label>ISBN:
-                        <input type="text" name="isbn" class="input-new-isbn" maxlength="17">
-                    </label>
-                    <label>Publisher:
-                        <input type="text" name="publisher" class="input-new-publisher" maxlength="200">
-                    </label>
-                    <label>Genre:
-                        <select name="genre" class="input-new-genre">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                        </select><br>
-                    </label>
-                    <button type="submit" class="modify-book-button">Submit Changes</button>
-                </form>`;
+let bookModifyForm = `
+<form class="book-modify-form hidden-desc" method="POST">
+<label>Book title:
+    <input type="text" name="title" class="input-new-title" maxlength="200">
+</label>
+<label>Author:
+    <input type="text" name="author" class="input-new-author" maxlength="200">
+</label>
+<label>ISBN:
+    <input type="text" name="isbn" class="input-new-isbn" maxlength="17">
+</label>
+<label>Publisher:
+    <input type="text" name="publisher" class="input-new-publisher"
+     maxlength="200">
+</label>
+<label>Genre:
+    <select name="genre" class="input-new-genre">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+    </select><br>
+</label>
+<button type="submit" class="modify-book-button">Submit Changes</button>
+</form>
+`;
 
-$(function() {
+// Book object constructor for new books or modifications
+let Book = function(
+    bookAuthor, bookTitle, bookISBN, bookPublisher, bookGenre
+) {
+     this.author = bookAuthor;
+     this.title = bookTitle;
+     this.isbn = bookISBN;
+     this.publisher = bookPublisher;
+     this.genre = bookGenre;
+};
 
-    let serverAddress = "http://localhost:8000/book/";
+let serverAddress = "http://localhost:8000/book/";
 
-    /**
-     * Function for performing Ajax requests to designated endpoint.
-     * @param requestMethod string indicating request: GET, POST, PUT, DELETE
-     * @param httpDestination string with endpoint
-     * @param optionalObject object to be sent to server
-     * @returns {*} result, either object or message
-     */
-    let ajaxCommunication = (
-        requestMethod,
-        httpDestination,
-        optionalObject
-    ) => {
-        return $.ajax({
-            url: httpDestination,
-            data: optionalObject,
-            type: requestMethod,
-            dataType: "json"
-        }).done(function(result) {
-            console.log("AJAX OK");
-            return result;
-        }).fail(function (xhr, status, err) {
-        }).always(function (xhr, status) {
-        });
-    };
-
-    // Book object constructor for new books or modifications
-    let Book = function(
-        bookAuthor, bookTitle, bookISBN, bookPublisher, bookGenre
-    ) {
-         this.author = bookAuthor;
-         this.title = bookTitle;
-         this.isbn = bookISBN;
-         this.publisher = bookPublisher;
-         this.genre = bookGenre;
-    };
-
-
-    // GET book data and create list items and divs
-
-    $.ajax({
-         url: "http://localhost:8000/book/",
-         type: "GET",
-         dataType: "json"
+/**
+ * Function for performing Ajax requests to designated endpoint.
+ * @param task string indicating task type, determines done response
+ * @param requestMethod string indicating request: GET, POST, PUT, DELETE
+ * @param httpDestination string with endpoint
+ * @param optionalObject object to be sent to server
+ * @returns {*} result, either object or message
+ */
+let ajaxCommunication = (
+    task,
+    requestMethod,
+    httpDestination,
+    optionalObject = 0
+) => {
+    return $.ajax({
+        url: httpDestination,
+        data: optionalObject,
+        type: requestMethod,
+        dataType: "json"
     }).done(function(result) {
-        for (let i = 0; i < result.length; i++) {
-            let newBook = $('<li class="book-title" data-id="'
-                + result[i].id
-                + '">'
-                + "<div class=\"book-title-span\">"
-                + result[i].title
-                + '<div class="remove-button">'
-                + '<button>Remove</button>'
-                + "</div>"
-                + '</div>'
-                + '<div class="book-desc hidden-desc"></div>'
-                + '</li>');
-            $(".book-list").eq(0).append(newBook);
+        if (task === "buildBookList") {
+            buildBookList(result);
+        } else if (task === "removeBook") {
+            location.reload();
+            console.log("DELETE OK");
+        } else if (task === "bookInfo") {
+            buildBookDesc(result);
+        } else if (task === "bookUpdate") {
+            console.log("PUT OK");
+            location.reload();
+        } else if (task === "newBook") {
+           console.log("POST OK");
         }
+    }).fail(function (xhr, status, err) {
+    }).always(function (xhr, status) {
+    });
+};
 
-        // Removal event
-        $(".remove-button button").each(function(index, element) {
-            $(element).on("click", function(removalClickEvent) {
-                removalClickEvent.stopImmediatePropagation();
-                $.ajax({
-                    url: "http://localhost:8000/book/"
-                        + $(element).parent().parent().parent().data("id"),
-                    type: "DELETE",
-                    dataType: "json"
-                }).done(function () {
-                    location.reload();
-                    console.log("DELETE OK");
-                }).fail(function (xhr, status, err) {
-                }).always(function (xhr, status) {
-                });
-            });
+let buildBookList = (ajaxResult) => {
+
+    // Book list items and hidden divs
+    for (let i = 0; i < ajaxResult.length; i++) {
+        let bookListItem = $('<li class="book-title" data-id="'
+            + ajaxResult[i].id
+            + '">'
+            + "<div class=\"book-title-span\">"
+            + ajaxResult[i].title
+            + '<div class="remove-button">'
+            + '<button>Remove</button>'
+            + "</div>"
+            + '</div>'
+            + '<div class="book-desc hidden-desc"></div>'
+            + '</li>');
+        $(".book-list").eq(0).append(bookListItem);
+    }
+
+    // Set removal events on buttons
+    $(".remove-button button").each(function (index, element) {
+        $(element).on("click", function (removalClickEvent) {
+            removalClickEvent.stopImmediatePropagation();
+            ajaxCommunication("removeBook", "DELETE",
+                serverAddress
+                    + $(element).parent().parent().parent().data("id")
+            );
         });
-
-
-        // Prepare divs with click events
-        $(".book-title-span").each(function(index, element) {
-            $(element).on("click", function () {
-                if ($(element).next().hasClass("hidden-desc")) {
-
-                    $(element).next().toggleClass("hidden-desc");
-
-                    $.ajax({
-                        url: "http://localhost:8000/book/" + $(element).parent().data("id"),
-                        type: "GET",
-                        dataType: "json"
-                    }).done(function (bookData) {
-                        $(element).next().html(
-                            "<span><br>Author: "
-                            + bookData.author + "<br>"
-                            + "Title: " +  bookData.title + "<br>"
-                            + "ISBN: " +  bookData.isbn + "<br>"
-                            + "Publisher: " +  bookData.publisher + "<br>"
-                            + "Genre: " +  bookData.genre + "</span><br><br>"
-                            + "<button type=\"submit\" class=\"modify-button\">"
-                            + "Modify</button>"
-                            + bookModifyForm
-                        );
-
-                        // Display modification form
-                        $(".book-title").find(".modify-button").each(function(index, element) {
-                            $(element).on("click", function (event) {
-                                event.stopPropagation();
-                                if ($(element).next().hasClass("hidden-desc")) {
-                                    $(element).next().toggleClass("hidden-desc");
-                                }
-                            })
-                        });
-
-                        // PUT modify book
-                        $(element).next().find(".modify-book-button").each(function(index, modifyButton){
-                            $(modifyButton).on("click", function(event) {
-                                // Perform validation
-                                if (!$(modifyButton).parent().find(".input-new-author").val()
-                                    || !$(modifyButton).parent().find(".input-new-title").val()
-                                    || !$(modifyButton).parent().find(".input-new-isbn").val()
-                                    || !$(modifyButton).parent().find(".input-new-publisher").val()
-                                    || !$(modifyButton).parent().find(".input-new-genre").val()) {
-                                    alert("Input values are not correct.");
-                                    event.preventDefault();
-                                } else {
-
-                                    // New book object
-                                    let modifiedBook = new Book(
-                                        $(modifyButton).parent().find(".input-new-author").val(),
-                                        $(modifyButton).parent().find(".input-new-title").val(),
-                                        $(modifyButton).parent().find(".input-new-isbn").val(),
-                                        $(modifyButton).parent().find(".input-new-publisher").val(),
-                                        $(modifyButton).parent().find(".input-new-genre").val()
-                                    );
-
-                                    // Submit object via AJAX
-                                    $.ajax({
-                                        url: "http://localhost:8000/book/"
-                                            + $(modifyButton).parent().parent().parent().data("id"),
-                                        data: modifiedBook,
-                                        type: "PUT",
-                                        dataType: "json"
-                                    }).done(function () {
-                                        console.log("PUT OK");
-                                        location.reload();
-                                    }).fail(function (xhr, status, err) {
-                                    }).always(function (xhr, status) {
-                                    });
-                                }
-                            });
-                        })
-
-                    }).fail(function (xhr, status, err) {
-                    }).always(function (xhr, status) {
-                    });
-
-                } else {
-                    $(element).next().toggleClass("hidden-desc");
-                }
-            })
-        });
-
-    }).fail(function(xhr,status,err) {
-    }).always(function(xhr,status) {
     });
 
+    // Prepare divs with click events
+    $(".book-title-span").each(function(index, element) {
+        $(element).on("click", function () {
+            if ($(element).next().hasClass("hidden-desc")) {
+                $(element).next().toggleClass("hidden-desc");
+                ajaxCommunication(
+                    "bookInfo",
+                    "GET",
+                    serverAddress + $(element).parent().data("id")
+                );
+            } else {
+                $(element).next().toggleClass("hidden-desc");
+            }
+        })
+    });
+};
 
-    // POST new book data
+
+let buildBookDesc = (ajaxResult) => {
+    $(`.book-title[data-id=${ajaxResult.id}] .book-desc`).html(
+        "<span><br>Author: "
+        + ajaxResult.author + "<br>"
+        + "Title: " +  ajaxResult.title + "<br>"
+        + "ISBN: " +  ajaxResult.isbn + "<br>"
+        + "Publisher: " +  ajaxResult.publisher + "<br>"
+        + "Genre: " +  ajaxResult.genre + "</span><br><br>"
+        + "<button type=\"submit\" class=\"modify-button\">"
+        + "Modify</button>"
+        + bookModifyForm
+    );
+
+    $(`.book-title[data-id=${ajaxResult.id}] .modify-button`)
+        .on("click", function (event) {
+            event.stopPropagation();
+            if ($(this).next().hasClass("hidden-desc")) {
+                $(this).next().toggleClass("hidden-desc");
+            }
+    });
+
+    // Book modify form and button
+    $(`.book-title[data-id=${ajaxResult.id}] .modify-book-button`)
+        .on("click", function(event) {
+                // Perform validation
+                if (!$(this).parent().find(".input-new-author").val()
+                    || !$(this).parent().find(".input-new-title").val()
+                    || !$(this).parent().find(".input-new-isbn").val()
+                    || !$(this).parent().find(".input-new-publisher").val()
+                    || !$(this).parent().find(".input-new-genre").val()) {
+                    alert("Input values are not correct.");
+                    event.preventDefault();
+                } else {
+
+                    // New book object
+                    let modifiedBook = new Book(
+                        $(this).parent().find(".input-new-author").val(),
+                        $(this).parent().find(".input-new-title").val(),
+                        $(this).parent().find(".input-new-isbn").val(),
+                        $(this).parent().find(".input-new-publisher").val(),
+                        $(this).parent().find(".input-new-genre").val()
+                    );
+
+                    // Submit object via AJAX
+                    ajaxCommunication(
+                        "bookUpdate",
+                        "PUT",
+                        serverAddress + $(this)
+                            .parent()
+                            .parent()
+                            .parent()
+                            .data("id"),
+                        modifiedBook
+                    );
+                }
+            });
+};
+
+
+// Website modification starts here
+$(function() {
+    // Set event for new book form
     $(".add-book-button").eq(0).on("click", function(event) {
         // Perform validation
         if (!$(".input-author").val()
@@ -219,17 +218,10 @@ $(function() {
             );
 
             // Submit object via AJAX
-            $.ajax({
-                url: "http://localhost:8000/book/",
-                data: newBook,
-                type: "POST",
-                dataType: "json"
-            }).done(function () {
-                console.log("POST OK");
-            }).fail(function (xhr, status, err) {
-            }).always(function (xhr, status) {
-            });
+            ajaxCommunication("newBook", "POST", serverAddress, newBook);
         }
     });
 
+    // GET book data and create list items
+    ajaxCommunication("buildBookList", "GET", serverAddress);
 });
