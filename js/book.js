@@ -31,7 +31,18 @@ $(function() {
 
     let serverAddress = "http://localhost:8000/book/";
 
-    let ajaxCommunication = (requestMethod, httpDestination, optionalObject) => {
+    /**
+     * Function for performing Ajax requests to designated endpoint.
+     * @param requestMethod string indicating request: GET, POST, PUT, DELETE
+     * @param httpDestination string with endpoint
+     * @param optionalObject object to be sent to server
+     * @returns {*} result, either object or message
+     */
+    let ajaxCommunication = (
+        requestMethod,
+        httpDestination,
+        optionalObject
+    ) => {
         return $.ajax({
             url: httpDestination,
             data: optionalObject,
@@ -45,7 +56,7 @@ $(function() {
         });
     };
 
-    // Book object (for new books)
+    // Book object constructor for new books or modifications
     let Book = function(
         bookAuthor, bookTitle, bookISBN, bookPublisher, bookGenre
     ) {
@@ -58,6 +69,7 @@ $(function() {
 
 
     // GET book data and create list items and divs
+
     $.ajax({
          url: "http://localhost:8000/book/",
          type: "GET",
