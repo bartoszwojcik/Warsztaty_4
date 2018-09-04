@@ -1,7 +1,7 @@
 /*
 Warning:
 The current version does not resolve the CORS issue in e.g. Firefox.
-Connection should be proxied
+Connection should be proxied perhaps?
  */
 
 
