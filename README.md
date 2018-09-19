@@ -13,6 +13,12 @@ The site itself is used to display information on books and add new ones using t
 * Updating information
 * Click-events displaying various hidden forms
 
+# Sample screenshots
+
+Book list, details, modification, adding, removal
+
+![Book Data](screenshots/book-data.png)
+
 # Author
 Bartosz Wójcik
 bartosz.wojcik@bartvessh.com
